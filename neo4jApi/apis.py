@@ -22,7 +22,7 @@ def get_sub_graph(cypher):
         for i in range(len(row)):
             obj = row[i]
             if meta[i]['type'] == 'relationship':
-                obj['resource'] = nodes.index(row[i-1])
+                obj['source'] = nodes.index(row[i-1])
                 obj['target'] = nodes.index(row[i + 1])
                 if obj not in edges:
                     edges.append(obj)
@@ -43,7 +43,49 @@ def search_sub_tree(name,low_level,high_level):
     cypher = "{\"statements\" : [%s]}" % statement
     return get_sub_graph(cypher)
 
+#
+def add_node(father,father_level,name,label,r_type,r_name):
+    statement = "match (father) where ID(father)=%s create p=(father)-[:%s{name:'%s'}]->(son:%s{father:%s,name:'%s',level:%s}) return p" % (
+    father, r_type, r_name, label,father,name, father_level + 1)
+    statement = "{\"statement\" : \"%s\" }" % statement
+    cypher = "{\"statements\" : [%s]}" % statement
+    # return statement
+    return get_response(cypher)
 
+def del_node(id):
+    statement = "MATCH (n)-[r]-() where ID(n)=%s delete n,r" % id
+    statement = "{\"statement\" : \"%s\" }" % statement
+    cypher = "{\"statements\" : [%s]}" % statement
+    # return statement
+    return get_response(cypher)
+
+def mov_node(id,name):
+    statement = "match (from) where ID(from)=%s set from.name='%s'" % (id,name)
+    statement = "{\"statement\" : \"%s\" }" % statement
+    cypher = "{\"statements\" : [%s]}" % statement
+    # return statement
+    return get_response(cypher)
+
+def add_rel(father,son,r_type,r_name):
+    statement =  "match (from),(to) where ID(from)=%s and ID(to)=%s create (from)-[:%s{name:'%s'}]->(to)" % (father,son,r_type,r_name)
+    statement = "{\"statement\" : \"%s\" }" % statement
+    cypher = "{\"statements\" : [%s]}" % statement
+    # return statement
+    return get_response(cypher)
+
+def del_rel(father,son,r_type,r_name):
+    statement =   "match (from)-[r:%s{name:'%s'}]->(to) where ID(from)=%s and ID(to)=%s delete r" % (r_type,r_name,father,son)
+    statement = "{\"statement\" : \"%s\" }" % statement
+    cypher = "{\"statements\" : [%s]}" % statement
+    # return statement
+    return get_response(cypher)
+
+def mod_rel(father,son,r_type,r_name,new_name):
+    statement =  "match (from)-[r:%s{name:'%s'}]->(to) where ID(from)=%s and ID(to)=%s set r.name='%s'" % (r_type,r_name,father,son,new_name)
+    statement = "{\"statement\" : \"%s\" }" % statement
+    cypher = "{\"statements\" : [%s]}" % statement
+    # return statement
+    return get_response(cypher)
 
 if __name__ == '__main__':
     # cypher = "{\"statements\" : [{\"statement\" : \"MATCH p=(n{name:'人工智能'})-[r*1..3]->(m) return p\" } ]}"

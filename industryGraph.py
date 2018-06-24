@@ -7,24 +7,65 @@ app = Flask(__name__, static_url_path='/static/')
 def hello_world():
     return app.send_static_file('index.html')
 
+# 生产跨域允许response
+def gen_response(response):
+    res = Response(response, mimetype="application/json")
+    res.headers['Access-Control-Allow-Origin'] = '*'
+    return res
+
 # 根据关键词搜索子图
 @app.route('/search/<name>', methods=['POST'])
 @app.route('/search/<name>/<int:low_level>/<int:high_level>', methods=['POST'])
 def search(name,low_level=1,high_level=3):
     response = json.dumps(apis.search_sub_tree(name,low_level,high_level))
-    print(response)
-    return response
-# 返回全部图
+    return gen_response(response)
+
+# 查看图谱
 @app.route('/graph', methods=['POST'])
 @app.route('/graph/<limit>', methods=['POST'])
 def graph(limit=10000):
     response = json.dumps(apis.search_graph(limit))
-    print(response)
-    return response
+    return gen_response(response)
+
+#添加叶子节点
+@app.route("/add_node/<int:father>/<int:father_level>/<name>/<label>/<r_type>/<r_name>",methods=['GET', 'POST'])
+def add_node(father,father_level,name,label,r_type,r_name):
+    response = json.dumps(apis.add_node(father,father_level,name,label,r_type,r_name))
+    return gen_response(response)
+
+#删除节点
+@app.route("/del_node/<id>",methods=['GET', 'POST'])
+def del_node(id,):
+    response = json.dumps(apis.del_node(id))
+    return gen_response(response)
+
+#修改节点属性
+@app.route("/mod_node/<id>/<name>",methods=['GET', 'POST'])
+def mod_node(id,name):
+    response = json.dumps(apis.mod_node(id,name))
+    return gen_response(response)
+
+#添加关系
+@app.route("/add_rel/<father>/<son>/<r_type>/<r_name>",methods=['GET', 'POST'])
+def add_rel(father,son,r_type,r_name):
+    response = json.dumps(apis.add_rel(father,son,r_type,r_name))
+    return gen_response(response)
+
+#删除关系
+@app.route("/del_rel",methods={'POST','GET'})
+def del_rel(father,son,r_type,r_name):
+    response = json.dumps(apis.del_rel(father, son, r_type, r_name))
+    return gen_response(response)
+
+#修改关系属性
+@app.route("/mod_rel",methods={'POST','GET'})
+def mod_rel(father,son,r_type,r_name,new_name):
+    response = json.dumps(apis.mod_rel(father,son,r_type,r_name,new_name))
+    return gen_response(response)
 
 
 if __name__ == '__main__':
-    app.run('0.0.0.0', port=5000)
+    app.run('0.0.0.0', port=5008)
 
 
 # @app.route('/test')
