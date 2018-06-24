@@ -1,4 +1,4 @@
-from utils import transaction_commit
+from neo4jApi.utils import transaction_commit
 
 # 获取单挑语句执行结果
 def get_response(cypher):
@@ -27,6 +27,14 @@ def get_sub_graph(cypher):
                 if obj not in edges:
                     edges.append(obj)
     return nodes,edges
+
+
+# 返回整个图
+def search_graph(limit):
+    statement = "MATCH p=()-[]-() RETURN p limit %d" % (limit)
+    statement = "{\"statement\" : \"%s\" }" % statement
+    cypher = "{\"statements\" : [%s]}" % statement
+    return get_sub_graph(cypher)
 
 # 搜索子树，name是搜索节点名称，low_level是展示的最低层级数，high_level是最高层数
 def search_sub_tree(name,low_level,high_level):
